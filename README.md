@@ -8,15 +8,15 @@ similar to the russian TV show "Field of Wonders"
  - Python 3.10
 
 ## Usage
-To start the server, run `python3 main.py -m server --addr <host>:<port>`.
+To start the server, run `python3 run.py -m server --addr <host>:<port>`.
 The default addr is `*:18071`.
 You may also specify a custom wordlist via the `--wordlist <file>` option.
 
-To start a client, run `python3 main.py -m client --addr <host>:<port>`,
+To start a client, run `python3 run.py -m client --addr <host>:<port>`,
 where addr denotes the server's address, `localhost:18071` by default.
 
 A more comprehensive overview of the available command line options
-can be obtained by running `python3 main.py --help`.
+can be obtained by running `python3 run.py --help`.
 
 ## Copyright
 Copyright © 2022 Andrew Belyaev. All rights reserved.
