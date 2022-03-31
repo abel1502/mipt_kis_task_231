@@ -61,7 +61,12 @@ class Stream:
         assert False, "Unknown overload"
 
     async def recv_line(self) -> bytes:
-        return await self.reader.readline()
+        data = await self.reader.readline()
+
+        if not data.endswith(b'\n'):
+            raise asyncio.IncompleteReadError(data, None)
+
+        return data
 
     async def __aenter__(self):
         return self
