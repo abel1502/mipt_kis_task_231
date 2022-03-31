@@ -1,6 +1,5 @@
 import argparse
 import typing
-from urllib.parse import urlparse
 import sys
 
 import field_of_wonders
@@ -16,22 +15,20 @@ def parse_addr(addr: str | None, default: str) -> typing.Tuple[str, int]:
     if addr is None:
         addr = default
 
+    addr = addr.split(":")
+
+    if len(addr) != 2:
+        raise error
+
+    host, port = addr
+
     try:
-        addr = urlparse(addr, allow_fragments=False)
+        port = int(port)
     except ValueError as e:
         raise error from e
 
-    should_be_empty = (addr.scheme, addr.path, addr.query)
-    if not all(map(lambda x: x == "", should_be_empty)):
-        raise error
-
-    should_be_none = (addr.username, addr.password)
-    if not all(map(lambda x: x is None, should_be_none)):
-        raise error
-
-    host, port = addr.hostname, addr.port
-    if not host or not port:
-        raise error
+    if host == '*':
+        host = ""
 
     return host, port
 
