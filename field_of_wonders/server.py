@@ -50,7 +50,10 @@ def run_server(addr: typing.Tuple[str, int],
 
         await server.run(host=addr[0], port=addr[1])
 
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        pass
 
 
 class Server(network.BaseServer):

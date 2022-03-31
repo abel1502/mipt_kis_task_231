@@ -11,7 +11,10 @@ def run_client(addr: typing.Tuple[str, int]):
 
         await client.run(*addr)
 
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        pass
 
 
 # Ideally this should have been inherited from an abstract class similar to BaseServer, but I hadn't had one in my lib,

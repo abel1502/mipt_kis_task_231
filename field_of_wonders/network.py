@@ -39,6 +39,8 @@ class BaseServer(abc.ABC):
             await self.wait_closed()
         except asyncio.CancelledError:
             pass
+        except KeyboardInterrupt:
+            pass
         self.log("Done.")
 
     def close(self):
