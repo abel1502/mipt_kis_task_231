@@ -75,3 +75,5 @@ class Stream:
         self.close()
         await self.wait_closed()
 
+
+__all__ = ("Stream",)
