@@ -27,7 +27,8 @@ class Wordlist:
             return line.isalpha()
 
         with path.open("rt") as file:
-            lines = tuple(filter(is_word_line, iter(file)))
+            lines = tuple(map(lambda x: x.rstrip("\r\n"),
+                              filter(is_word_line, iter(file))))
 
         return Wordlist(lines)
 
