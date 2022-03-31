@@ -5,9 +5,41 @@ import random
 import string
 
 from . import network
+from .string_table import *
 from .network import BaseServerHandler
 from .stream import Stream
 from .wordlist import load_wordlist, Wordlist, pathlib
+
+
+class Strings:
+    MSG_BAD_LETTER = res("You must chose one of the presented letters.\n"
+                         "To quit, type '{key}' (without the quotes)")
+    MSG_CORRECT = res("Correct!")
+    MSG_WRONG = res("Sorry, wrong.")
+    COUNT_CHANCES = plural("chance")
+    COUNT_LIVES = plural("life", "lives")
+    MSG_ATTEMPT_RESULT = res("{res} {chances} left")
+    MSG_REMAINING_LETTERS = res("The remaining letters are:\n{}")
+    MSG_TYPE_YOUR_LETTER = res("Type your letter (or '{key}' to exit)")
+    MSG_WORD_IS = res("The word is: {word}")
+    MSG_WORD_WAS = res("The word was: {word}")
+    MSG_GREETINGS = res("""
+        Hello, and welcome to the Field of Wonders!
+        The rules of this game are simple: you get a word, you try to guess it.
+        You have {chances} for mistake, then you're out!
+        """)
+    MSG_YOU_WON = res("Congratulations! You've won with {} left!\n{}")
+    MSG_CLOSE_ONE = res("This was a close one!")
+    MSG_YOU_PRO = res("You're a pro!")
+    MSG_YOU_LOST = res("Sorry, you lost... But good luck next time!")
+    MSGS_AGAIN = (
+        res("Wanna try again?"),
+        res("How about another try?"),
+        res("Let's go again!"),
+    )
+    MSG_YES_OR_NO_DEF_YES = res("Type [Y]es or [n]o")
+    WORD_YES = res("yes")
+    WORD_NO = res("no")
 
 
 def run_server(addr: typing.Tuple[str, int],
@@ -78,8 +110,7 @@ class Server(network.BaseServer):
                     raise self.UserExit()
 
                 if letter not in letters_left:
-                    await self.warn("You must chose one of the presented letters.\n"
-                                    "To quit, type '/' (without the quotes)")
+                    await self.warn(Strings.MSG_BAD_LETTER(key='/'))
                     continue
 
                 letters_left.remove(letter)
@@ -89,14 +120,15 @@ class Server(network.BaseServer):
                 result_msg = ""
                 if letter in word:
                     # Guessed
-                    result_msg = "Correct!"
+                    result_msg = Strings.MSG_CORRECT()
                     letters_guessed.add(letter)
                 else:
                     # Not guessed
-                    result_msg = "Sorry, wrong."
+                    result_msg = Strings.MSG_WRONG()
                     lives -= 1
 
-                await self.say(f"{result_msg} {self.plural(lives, 'chance')} left")
+                await self.say(Strings.MSG_ATTEMPT_RESULT(res=result_msg,
+                                                          chances=Strings.COUNT_CHANCES(lives)))
 
                 if all(map(lambda c: c in letters_guessed, word)):
                     # The whole word was guessed
@@ -110,12 +142,9 @@ class Server(network.BaseServer):
             await self.lose(word)
 
         async def prompt_letter(self, letters_left: typing.Iterable[str]) -> str:
-            await self.say(f"""
-            The remaining letters are:
-            {' '.join(sorted(letters_left))}
-            """)
+            await self.say(Strings.MSG_REMAINING_LETTERS(' '.join(sorted(letters_left))))
 
-            resp = await self.ask("Type your letter (or '/' to exit)")
+            resp = await self.ask(Strings.MSG_TYPE_YOUR_LETTER(key='/'))
 
             return resp.lower()
 
@@ -125,9 +154,7 @@ class Server(network.BaseServer):
             if letters_guessed is not None:
                 word = ''.join(map(lambda c: c if c in letters_guessed else '*', word))
 
-            await self.say(f"""
-            The word {"is" if not past else "was"}: {word}
-            """)
+            await self.say((Strings.MSG_WORD_IS if not past else Strings.MSG_WORD_WAS)(word=word))
 
         async def warn(self, msg: str) -> None:
             await self.say(msg)
@@ -151,54 +178,32 @@ class Server(network.BaseServer):
         async def send_cmd(self, cmd: str) -> None:
             await self.stream.send(f"\0{cmd}\n".encode())
 
-        @staticmethod
-        def plural(value: int, word_single: str, word_plural: str | None = None) -> str:
-            if word_plural is None:
-                word_plural = word_single + "s"
-
-            last_digit = value % 10
-            second_digit = value / 10 % 10
-
-            word = word_plural
-            if second_digit != 1 and last_digit == 1:
-                word = word_single
-
-            return f"{value} {word}"
-
         async def greet(self) -> None:
-            await self.say(f"""
-            Hello, and welcome to the Field of Wonders!
-            The rules of this game are simple: you get a word, you try to guess it.
-            You have {self.plural(self.attempts, "chance")} for mistake, then you're out!
-            """)
+            await self.say(Strings.MSG_GREETINGS(chances=Strings.COUNT_CHANCES(self.attempts)))
 
-        async def win(self, word: str | None = None) -> None:
+        async def win(self, lives: int, word: str | None = None) -> None:
             if word is not None:
                 await self.say_word(word)
 
-            await self.say(f"""
-            Congratulations! You've won with {self.plural(self.attempts, "life", "lives")} left! 
-            {"This was a close one!" if self.attempts == 0 else "You're a pro!"}
-            """)
+            await self.say(Strings.MSG_YOU_WON(lives=Strings.COUNT_LIVES(lives),
+                                               secondary=(Strings.MSG_CLOSE_ONE() if
+                                                          lives == 1 else
+                                                          Strings.MSG_YOU_PRO())))
 
         async def lose(self, word: str | None = None):
-            await self.say("Sorry, you lost... But good luck next time!")
+            await self.say(Strings.MSG_YOU_LOST())
             if word is not None:
                 await self.say_word(word, past=True)
 
         async def prompt_again(self) -> True:
-            MSGS = (
-                "Wanna try again?",
-                "How about another try?",
-                "Let's go again!"
-            )
-            msg = random.choice(MSGS)
+            msg = random.choice(Strings.MSGS_AGAIN)()
 
             await self.say(msg)
-            resp = await self.ask("Type [Y]es or [n]o")
+            resp = await self.ask(Strings.MSG_YES_OR_NO_DEF_YES())
             resp = resp.strip().lower()
 
-            return resp not in ("n", "no")
+            NO = Strings.WORD_NO
+            return resp not in (NO[0], NO)
 
     verbose = True
 
