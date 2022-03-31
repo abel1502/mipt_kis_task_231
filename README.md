@@ -5,7 +5,13 @@ similar to the russian TV show "Field of Wonders"
 (an analogue of the US "Wheel of Fortune").
 
 ## Requirements
- - Python 3.10
+ - Python >= 3.10
+
+[//]: # (## Setup)
+[//]: # ( - Makes sure you have Python >= 3.10 as your python )
+[//]: # (executable &#40;from here on referred to as `python3`&#41;.)
+[//]: # ( - Run `python3 -m pip install -r requirements.txt`)
+[//]: # (to install the required site-packages.)
 
 ## Usage
 To start the server, run `python3 run.py -m server --addr <host>:<port>`.
