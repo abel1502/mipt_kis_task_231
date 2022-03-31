@@ -1,5 +1,5 @@
 # Task 231: Field of Wonders
-This is the trial task for the MIPT KIS department.
+This is my solution of the trial task for the MIPT KIS department.
 The key point of this app is guessing a word letter-by-letter,
 similar to the russian TV show "Field of Wonders"
 (an analogue of the US "Wheel of Fortune").
