@@ -39,7 +39,7 @@ class Stream:
         ...
 
     @typing.overload
-    async def recv(self, until: bytes) -> bytes:
+    async def recv(self, until: bytes | str) -> bytes:
         ...
 
     async def recv(self, arg=None, **kwargs):
@@ -52,10 +52,16 @@ class Stream:
         if isinstance(arg, int):
             return await self.reader.read(arg)
 
+        if isinstance(arg, str):
+            arg = arg.encode()
+
         if isinstance(arg, bytes):
             return await self.reader.readuntil(arg)
 
         assert False, "Unknown overload"
+
+    async def recv_line(self) -> bytes:
+        return await self.reader.readline()
 
     async def __aenter__(self):
         return self
