@@ -3,7 +3,7 @@ import pathlib
 import random
 
 
-DEFAULT_WORDLIST = pathlib.Path(__file__).parent / "wordlists" / "default.txt"
+DEFAULT_WORDLIST = pathlib.Path(__file__).parent / "wordlists" / "large.txt"
 
 
 def load_wordlist(path: pathlib.Path | str | None) -> "Wordlist":
